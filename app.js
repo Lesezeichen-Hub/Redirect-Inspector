@@ -143,12 +143,12 @@ function isTrackingParam(key) {
 
 async function inspectWithHubFallback(url) {
   try {
-    const response = await fetch("/api/redirect-inspector", {
+    const response = await fetch("/api/http/inspect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, use_head: els.useHead.checked }),
+      body: JSON.stringify({ url, method: els.useHead.checked ? "HEAD" : "GET", follow_redirects: true, max_redirects: 10, include_headers: true, include_tls: true }),
     });
-    if (!response.ok) throw new Error(`Hub API ${response.status}`);
+    if (!response.ok) throw new Error(`Hub HTTP-Inspect ${response.status}`);
     const payload = await response.json();
     const lastHop = [...(payload.hops || [])].pop();
     return {

@@ -1,6 +1,6 @@
 {
-    "version":  "1.1.0",
+    "version":  "1.2.0",
     "name":  "Redirect Inspector",
-    "description":  "Analysiert URLs, Redirect-Ketten, Tracking-Parameter, TLS-Daten und HTTP-Sicherheitsheader ueber die lokale Hub-API.",
+    "description":  "Analysiert URLs, Redirect-Ketten, Tracking-Parameter, TLS-Daten und HTTP-Sicherheitsheader ueber die generische lokale Hub-HTTP-Inspect-API.",
     "updated_at":  "2026-09-08"
 }

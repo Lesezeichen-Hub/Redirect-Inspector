@@ -6,7 +6,7 @@ Lokales Lesezeichen-Hub-Modul zum Pruefen von URLs, Redirects, Tracking-Paramete
 
 - URL normalisieren und Bestandteile sichtbar machen
 - Tracking-Parameter erkennen und bereinigte URL erzeugen
-- Redirect-Checks ueber die lokale Lesezeichen-Hub-API, inklusive Statuscodes, Location-Headern und TLS-Ablaufdatum
+- Redirect-Checks ueber die generische lokale Lesezeichen-Hub-HTTP-Inspect-API, inklusive Statuscodes, Location-Headern und TLS-Ablaufdatum
 - Header-Paste-Analyzer fuer `curl -I -L` oder PowerShell-Antworten
 - Sicherheitsheader-Check fuer CSP, HSTS, X-Frame-Options, Referrer-Policy und weitere Header
 - Batch-Modus fuer mehrere URLs
@@ -15,4 +15,4 @@ Lokales Lesezeichen-Hub-Modul zum Pruefen von URLs, Redirects, Tracking-Paramete
 
 ## Hinweis zu CORS
 
-Mit einer Hub-Version, die `/api/redirect-inspector` bereitstellt, umgeht das Modul Browser-CORS durch eine lokale serverseitige Pruefung. Wird das Modul ausserhalb des Hubs oder mit einer aelteren Hub-Version gestartet, faellt es auf Browser-Fetch zurueck und zeigt passende lokale Befehle an.
+Mit einer Hub-Version, die `/api/http/inspect` bereitstellt, umgeht das Modul Browser-CORS durch eine lokale serverseitige Pruefung. Wird das Modul ausserhalb des Hubs oder mit einer aelteren Hub-Version gestartet, faellt es auf Browser-Fetch zurueck und zeigt passende lokale Befehle an.
