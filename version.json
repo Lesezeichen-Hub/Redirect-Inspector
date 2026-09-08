@@ -1,6 +1,6 @@
 {
-    "version":  "1.0.1",
+    "version":  "1.1.0",
     "name":  "Redirect Inspector",
-    "description":  "Analysiert URLs, Redirects, Tracking-Parameter und HTTP-Sicherheitsheader als lokales Lesezeichen-Hub-Modul.",
+    "description":  "Analysiert URLs, Redirect-Ketten, Tracking-Parameter, TLS-Daten und HTTP-Sicherheitsheader ueber die lokale Hub-API.",
     "updated_at":  "2026-09-08"
 }

@@ -87,9 +87,9 @@ async function inspectCurrent() {
   renderURLParts(analysis);
   updateCommand(analysis.normalized);
   renderSummary(analysis, null);
-  renderChain([{ url: analysis.normalized, status: "Analyse", note: "Live-Check laeuft, falls CORS den Zugriff erlaubt." }]);
+  renderChain([{ url: analysis.normalized, status: "Analyse", note: "Hub-Backend prueft Redirects und Header." }]);
 
-  const live = await inspectLive(analysis.normalized);
+  const live = await inspectWithHubFallback(analysis.normalized);
   const headers = parseHeadersObject(live.headers || {});
   const score = scoreHeaders(headers, analysis.parsed.protocol === "https:");
   lastResult = { ...analysis, live, headers, securityScore: score.score };
@@ -141,6 +141,35 @@ function isTrackingParam(key) {
   return trackingParams.has(lower) || trackingPrefixes.some((prefix) => lower.startsWith(prefix));
 }
 
+async function inspectWithHubFallback(url) {
+  try {
+    const response = await fetch("/api/redirect-inspector", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, use_head: els.useHead.checked }),
+    });
+    if (!response.ok) throw new Error(`Hub API ${response.status}`);
+    const payload = await response.json();
+    const lastHop = [...(payload.hops || [])].pop();
+    return {
+      ok: lastHop ? lastHop.status >= 200 && lastHop.status < 400 : false,
+      method: lastHop?.method || (els.useHead.checked ? "HEAD" : "GET"),
+      status: lastHop?.status || "Hub",
+      statusText: lastHop?.status_text || payload.error || "",
+      finalURL: payload.final_url || url,
+      redirected: Boolean(payload.redirected),
+      latencyMs: payload.latency_ms || 0,
+      error: payload.error || "",
+      headers: lastHop?.headers || {},
+      hops: payload.hops || [],
+      source: "hub",
+    };
+  } catch (error) {
+    const live = await inspectLive(url);
+    live.source = "browser";
+    return live;
+  }
+}
 async function inspectLive(url) {
   const started = performance.now();
   const methods = els.useHead.checked ? ["HEAD", "GET"] : ["GET"];
@@ -184,12 +213,22 @@ async function inspectLive(url) {
 
 function buildChain(analysis, live) {
   const rows = [{ url: analysis.normalized, status: "Start", note: analysis.host }];
-  if (live.finalURL && live.finalURL !== analysis.normalized) {
+  if (Array.isArray(live.hops) && live.hops.length) {
+    for (const hop of live.hops) {
+      const noteParts = [];
+      if (hop.location) noteParts.push(`Location: ${hop.location}`);
+      if (hop.tls_expires_at) noteParts.push(`TLS bis: ${new Date(hop.tls_expires_at).toLocaleDateString("de-DE")}`);
+      rows.push({ url: hop.url, status: `${hop.method || "HTTP"} ${hop.status}`, note: noteParts.join(" | ") || hop.status_text || "" });
+    }
+  } else if (live.finalURL && live.finalURL !== analysis.normalized) {
     rows.push({ url: live.finalURL, status: live.status, note: "Finale URL nach Browser-Follow" });
   } else {
     rows.push({ url: live.finalURL || analysis.normalized, status: live.status, note: live.redirected ? "Redirect erkannt" : "Kein sichtbarer Redirect" });
   }
-  if (live.error) rows.push({ url: analysis.normalized, status: "Hinweis", note: `CORS blockiert Details: ${live.error}` });
+  if (live.error) {
+    const prefix = live.source === "browser" ? "CORS blockiert Details" : "Hinweis";
+    rows.push({ url: analysis.normalized, status: "Hinweis", note: `${prefix}: ${live.error}` });
+  }
   return rows;
 }
 
