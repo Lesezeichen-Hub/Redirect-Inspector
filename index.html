@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Redirect Inspector</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Lesezeichen-Hub Modul</p>
+        <h1>Redirect Inspector</h1>
+        <p class="lead">URL-Ketten, Tracking-Parameter und HTTP-Header pruefen, ohne Daten dauerhaft nach aussen zu senden.</p>
+      </div>
+      <div class="score-card" aria-live="polite">
+        <span id="health-label">Bereit</span>
+        <strong id="health-score">-</strong>
+      </div>
+    </header>
+
+    <section class="workspace" aria-label="Pruefung">
+      <form id="inspect-form" class="input-panel">
+        <label for="target-url">URL</label>
+        <div class="url-row">
+          <input id="target-url" name="url" type="text" inputmode="url" placeholder="https://example.com/path?utm_source=..." autocomplete="url" required />
+          <button type="submit">Pruefen</button>
+        </div>
+        <div class="options-row">
+          <label><input id="use-head" type="checkbox" checked /> HEAD zuerst verwenden</label>
+          <label><input id="strip-known" type="checkbox" checked /> Tracking-Parameter markieren</label>
+          <button id="sample-url" class="secondary" type="button">Beispiel</button>
+          <button id="clear-all" class="secondary" type="button">Leeren</button>
+        </div>
+      </form>
+
+      <section class="panel" aria-labelledby="summary-title">
+        <div class="panel-head">
+          <h2 id="summary-title">Analyse</h2>
+          <button id="copy-clean-url" class="secondary" type="button" disabled>Saubere URL kopieren</button>
+        </div>
+        <div id="summary" class="summary-grid"></div>
+        <ol id="redirect-chain" class="chain"></ol>
+      </section>
+    </section>
+
+    <section class="grid-two">
+      <section class="panel" aria-labelledby="headers-title">
+        <div class="panel-head">
+          <h2 id="headers-title">Header analysieren</h2>
+          <button id="analyze-headers" class="secondary" type="button">Auswerten</button>
+        </div>
+        <textarea id="raw-headers" rows="11" spellcheck="false" placeholder="Fuege hier Header ein, z.B. aus: curl -I -L https://example.com"></textarea>
+        <div id="header-findings" class="findings"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="tools-title">
+        <div class="panel-head">
+          <h2 id="tools-title">Werkzeuge</h2>
+          <button id="copy-command" class="secondary" type="button">Befehl kopieren</button>
+        </div>
+        <div class="command-box">
+          <code id="curl-command">curl -I -L --max-redirs 10 "https://example.com"</code>
+        </div>
+        <div id="url-parts" class="parts-list"></div>
+      </section>
+    </section>
+
+    <section class="panel" aria-labelledby="batch-title">
+      <div class="panel-head">
+        <h2 id="batch-title">Batch</h2>
+        <div class="actions">
+          <button id="run-batch" class="secondary" type="button">Batch pruefen</button>
+          <button id="export-json" class="secondary" type="button">JSON</button>
+          <button id="export-csv" class="secondary" type="button">CSV</button>
+        </div>
+      </div>
+      <textarea id="batch-input" rows="5" spellcheck="false" placeholder="Eine URL pro Zeile"></textarea>
+      <div id="batch-results" class="table-wrap"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="history-title">
+      <div class="panel-head">
+        <h2 id="history-title">Verlauf</h2>
+        <button id="clear-history" class="secondary" type="button">Verlauf loeschen</button>
+      </div>
+      <div id="history" class="history-list"></div>
+    </section>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
+
