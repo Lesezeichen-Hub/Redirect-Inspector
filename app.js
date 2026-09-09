@@ -23,6 +23,8 @@ const els = {
   clearHistory: document.getElementById("clear-history"),
   healthLabel: document.getElementById("health-label"),
   healthScore: document.getElementById("health-score"),
+  tlsFindings: document.getElementById("tls-findings"),
+  tlsBadge: document.getElementById("tls-badge"),
 };
 
 const historyKey = "redirect_inspector_history_v1";
@@ -92,10 +94,12 @@ async function inspectCurrent() {
   const live = await inspectWithHubFallback(analysis.normalized);
   const headers = parseHeadersObject(live.headers || {});
   const score = scoreHeaders(headers, analysis.parsed.protocol === "https:");
-  lastResult = { ...analysis, live, headers, securityScore: score.score };
+  const tls = lastTLSInfo(live);
+  lastResult = { ...analysis, live, headers, securityScore: score.score, tls };
   renderSummary(analysis, live);
   renderChain(buildChain(analysis, live));
   renderHeaderFindings(headers, score);
+  renderTLSFindings(tls, analysis.protocol === "https");
   setHealth(score.label, score.score);
   els.copyCleanURL.disabled = !analysis.cleanURL;
   addHistory(lastResult);
@@ -259,6 +263,14 @@ function parseHeadersObject(headers) {
   return Object.fromEntries(Object.entries(headers || {}).map(([key, value]) => [key.toLowerCase(), String(value)]));
 }
 
+function lastTLSInfo(live) {
+  const hops = Array.isArray(live?.hops) ? live.hops : [];
+  for (let i = hops.length - 1; i >= 0; i -= 1) {
+    if (hops[i]?.tls) return hops[i].tls;
+  }
+  return null;
+}
+
 function scoreHeaders(headers, isHTTPS) {
   let score = isHTTPS ? 10 : 0;
   for (const item of securityHeaders) {
@@ -320,6 +332,46 @@ function renderHeaderFindings(headers, scored) {
   setHealth(score.label, score.score);
 }
 
+function renderTLSFindings(tls, isHTTPS) {
+  if (!isHTTPS) {
+    els.tlsFindings.innerHTML = "<p>Kein TLS: URL nutzt HTTP.</p>";
+    els.tlsBadge.textContent = "-";
+    els.tlsBadge.className = "badge";
+    return;
+  }
+  if (!tls) {
+    els.tlsFindings.innerHTML = "<p>Keine TLS-Daten. Die Hub-HTTP-Inspect-API war nicht erreichbar (Browser-CORS-Fallback liefert keine Zertifikatsdetails).</p>";
+    els.tlsBadge.textContent = "?";
+    els.tlsBadge.className = "badge";
+    return;
+  }
+  const rows = [];
+  const notAfter = tls.not_after ? new Date(tls.not_after) : null;
+  const notBefore = tls.not_before ? new Date(tls.not_before) : null;
+
+  if (tls.expired) {
+    rows.push(finding("bad", "Zertifikat abgelaufen", notAfter ? `Ablauf: ${notAfter.toLocaleString("de-DE")}` : "Kein Ablaufdatum verfuegbar."));
+  } else if (tls.expiring_soon) {
+    rows.push(finding("warn", `Laeuft in ${tls.days_remaining} Tag(en) ab`, notAfter ? `Ablauf: ${notAfter.toLocaleString("de-DE")}` : ""));
+  } else if (notAfter) {
+    rows.push(finding("ok", `Laufzeit: ${tls.days_remaining} Tage verbleibend`, `Ablauf: ${notAfter.toLocaleString("de-DE")}`));
+  }
+  if (notBefore) rows.push(finding("ok", "Gueltig ab", notBefore.toLocaleString("de-DE")));
+  rows.push(finding(tls.hostname_ok ? "ok" : "bad", "Hostname-Pruefung", tls.hostname_ok ? "Zertifikat passt zum Hostnamen." : "Zertifikat deckt den Hostnamen nicht ab."));
+  rows.push(finding(tls.self_signed ? "warn" : "ok", "Aussteller", `${tls.issuer || "unbekannt"}${tls.self_signed ? " (selbstsigniert)" : ""}`));
+  rows.push(finding("ok", "Subject", tls.subject || "-"));
+  if (tls.dns_names?.length) rows.push(finding("ok", "Alternative Namen (SAN)", tls.dns_names.join(", ")));
+  rows.push(finding(tls.weak_protocol ? "bad" : "ok", "Protokoll", tls.version || "unbekannt"));
+  rows.push(finding("ok", "Cipher Suite", tls.cipher_suite || "unbekannt"));
+  rows.push(finding("ok", "Signatur / Schluessel", `${tls.signature_algorithm || "-"} / ${tls.key_algorithm || "-"}`));
+  if (tls.chain_length) rows.push(finding("ok", "Zertifikatskette", `${tls.chain_length} Zertifikat(e) vom Server gesendet.`));
+
+  els.tlsFindings.innerHTML = rows.join("");
+  const badge = tls.expired || !tls.hostname_ok || tls.weak_protocol ? "bad" : tls.expiring_soon || tls.self_signed ? "warn" : "ok";
+  els.tlsBadge.textContent = tls.expired ? "Abgelaufen" : tls.expiring_soon ? "Laeuft bald ab" : !tls.hostname_ok ? "Hostname-Fehler" : tls.self_signed ? "Selbstsigniert" : "OK";
+  els.tlsBadge.className = `badge ${badge}`;
+}
+
 async function runBatch() {
   const urls = els.batchInput.value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const results = [];
@@ -371,6 +423,9 @@ function renderEmpty() {
   els.chain.innerHTML = "";
   els.headerFindings.innerHTML = "<p>Fuege Header ein oder pruefe eine URL.</p>";
   els.urlParts.innerHTML = "";
+  els.tlsFindings.innerHTML = "<p>Noch keine TLS-Daten. Pruefe eine HTTPS-URL.</p>";
+  els.tlsBadge.textContent = "-";
+  els.tlsBadge.className = "badge";
 }
 
 function renderError(message) {

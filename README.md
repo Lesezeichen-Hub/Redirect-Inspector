@@ -6,7 +6,8 @@ Lokales Lesezeichen-Hub-Modul zum Pruefen von URLs, Redirects, Tracking-Paramete
 
 - URL normalisieren und Bestandteile sichtbar machen
 - Tracking-Parameter erkennen und bereinigte URL erzeugen
-- Redirect-Checks ueber die generische lokale Lesezeichen-Hub-HTTP-Inspect-API, inklusive Statuscodes, Location-Headern und TLS-Ablaufdatum
+- Redirect-Checks ueber die generische lokale Lesezeichen-Hub-HTTP-Inspect-API, inklusive Statuscodes und Location-Headern
+- Eigenes TLS-Zertifikat-Panel: Laufzeit/Ablauf mit Warnstufen, Aussteller, Self-Signed-Erkennung, Hostname-Pruefung, SANs, Protokollversion, Cipher Suite und Zertifikatskette
 - Header-Paste-Analyzer fuer `curl -I -L` oder PowerShell-Antworten
 - Sicherheitsheader-Check fuer CSP, HSTS, X-Frame-Options, Referrer-Policy und weitere Header
 - Batch-Modus fuer mehrere URLs
