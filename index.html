@@ -20,7 +20,12 @@
       </div>
     </header>
 
-    <section class="workspace" aria-label="Pruefung">
+    <nav class="section-nav" aria-label="Bereiche">
+      <a href="#redirect-inspector">Redirect Inspector</a>
+      <a href="#cert-inspector">CertInspector</a>
+    </nav>
+
+    <section id="redirect-inspector" class="workspace" aria-label="Redirect-Pruefung">
       <form id="inspect-form" class="input-panel">
         <label for="target-url">URL</label>
         <div class="url-row">
@@ -99,8 +104,36 @@
       </div>
       <div id="history" class="history-list"></div>
     </section>
+    <section id="cert-inspector" class="cert-section" aria-labelledby="cert-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Lokal im Browser</p><h2 id="cert-title">CertInspector</h2>
+          <p class="lead">X.509-Zertifikate, PEM, CSR und Zertifikatsketten prüfen. Eingaben werden nicht hochgeladen oder gespeichert.</p></div>
+      </div>
+      <div class="cert-layout">
+        <section class="panel cert-input-panel" aria-labelledby="cert-input-title">
+          <h3 id="cert-input-title">Material eingeben</h3>
+          <label for="cert-pem">PEM-Blöcke einfügen</label>
+          <textarea id="cert-pem" rows="12" spellcheck="false" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
+          <label for="cert-hostname">Hostname gegen SAN prüfen (optional)</label>
+          <input id="cert-hostname" type="text" inputmode="url" placeholder="www.example.com" autocomplete="off" />
+          <label for="cert-file" class="file-label">Dateien auswählen (.pem, .crt, .cer, .der, .csr)</label>
+          <input id="cert-file" type="file" accept=".pem,.crt,.cer,.der,.csr,.txt" multiple />
+          <p class="hint">Mehrere Zertifikate in Ausstellerreihenfolge oder beliebiger Reihenfolge einfügen. DER-Dateien werden ebenfalls erkannt.</p>
+          <div class="actions"><button id="cert-analyze" type="button">Lokal analysieren</button><button id="cert-clear" class="secondary" type="button">Leeren</button></div>
+          <p id="cert-status" class="hint" role="status" aria-live="polite">Noch kein Material analysiert.</p>
+        </section>
+        <section class="panel cert-results-panel" aria-labelledby="cert-results-title">
+          <div class="panel-head"><h3 id="cert-results-title">Ergebnis</h3><span id="cert-count" class="badge">0 Objekte</span></div>
+          <div id="cert-overview" class="cert-overview"><p>Zertifikate oder CSR einfügen und analysieren.</p></div>
+          <div id="cert-results" class="cert-results"></div>
+        </section>
+      </div>
+    </section>
+
   </main>
   <script src="app.js" defer></script>
+  <script src="cert-core.js" defer></script>
+  <script src="cert-ui.js" defer></script>
 </body>
 </html>
 

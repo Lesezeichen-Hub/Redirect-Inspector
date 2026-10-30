@@ -1,6 +1,6 @@
 {
-    "version":  "1.3.0",
+    "version":  "1.4.0",
     "name":  "Redirect Inspector",
-    "description":  "Analysiert URLs, Redirect-Ketten, Tracking-Parameter, TLS-Zertifikate (Laufzeit, Aussteller, Protokoll, Hostname-Pruefung) und HTTP-Sicherheitsheader ueber die generische lokale Hub-HTTP-Inspect-API.",
-    "updated_at":  "2026-09-09"
+    "description":  "Analysiert Redirects und HTTP-Header sowie X.509-Zertifikate, PEM, CSR und Zertifikatsketten lokal im CertInspector.",
+    "updated_at":  "2026-10-30"
 }
